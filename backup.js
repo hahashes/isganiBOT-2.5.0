@@ -6,7 +6,6 @@ const fs = require("fs");
 const autoReact = require("./handle/autoReact");
 const unsendReact = require("./handle/unsendReact");
 const chalk = require("chalk");
-const axios = require("axios");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -147,7 +146,7 @@ const setupBot = (api, prefix) => {
     userAgent: getRandomUserAgent(),
   });
 
-  api.listenMqtt(async (err, event) => {
+  api.listenMqtt((err, event) => {
     if (err) {
       console.error(
         chalk.bold.gray("[") + 
@@ -160,7 +159,6 @@ const setupBot = (api, prefix) => {
       return;
     }
 
-    await handleFacebookLink(api, event);
     handleMessage(api, event, prefix);
     handleEvent(api, event, prefix);
     autoReact(api, event);
@@ -216,54 +214,6 @@ const handleMessage = async (api, event, prefix) => {
     }
   }
 };
-
-const handleFacebookLink = async (api, event) => {
-  const facebookLinkRegex = /(https?:\/\/(www\.)?(facebook\.com|fb\.watch)\/.*)/i;
-  const match = event.body.match(facebookLinkRegex);
-
-  if (match) {
-    const facebookURL = match[0];
-    console.log(chalk.bold.yellow(`[INFO] Found Facebook link: ${facebookURL}`));
-
-    try {
-      const apiUrl = `https://kaiz-apis.gleeze.com/api/fbdl?url=${encodeURIComponent(facebookURL)}`;
-      const response = await axios.get(apiUrl);
-      const videoData = response.data;
-
-      if (videoData && videoData.videoUrl) {
-        console.log(chalk.bold.green("[INFO] Video URL found, starting download..."));
-
-        const videoPath = path.join(__dirname, "fb_video.mp4");
-        const writer = fs.createWriteStream(videoPath);
-
-        const videoStream = await axios.get(videoData.videoUrl, { responseType: 'stream' });
-
-        videoStream.data.pipe(writer);
-
-        await new Promise((resolve, reject) => {
-          writer.on('finish', resolve);
-          writer.on('error', reject);
-        });
-
-        console.log(chalk.green("[INFO] Video downloaded successfully. Sending..."));
-          api.sendMessage({
-              body: `${videoData.title}`,
-              attachment: fs.createReadStream(videoPath)
-          }, event.threadID, () => fs.unlinkSync(videoPath), event.messageID);
-        console.log(chalk.green("[INFO] Video sent successfully."));
-
-      } else {
-        console.log(chalk.bold.yellow("[WARNING] No video URL found in the API response."));
-        api.sendMessage("Sorry, I couldn't retrieve the video from that link.", event.threadID);
-      }
-
-    } catch (error) {
-      console.error(chalk.bold.red(`[ERROR] Error during video download: ${error}`));
-      api.sendMessage("Sorry, I encountered an error while trying to download the video.", event.threadID);
-    }
-  }
-};
-
 
 const init = async () => {
   await loadModules("commands");
