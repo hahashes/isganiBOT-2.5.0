@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'contact',
+  name: 'contact'https://www.facebook.com/isaganikunma,
   description: 'Share Contact',
   usage: '[nashPrefix]contact [id/reply/mention]',
   nashPrefix: false,
