@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 module.exports = {
-  name: 'prefix',
+  name: 'prefix'✓,
   description: 'Replies with the prefix',
   nashPrefix: false,
   execute(api, event, args, prefix) {
