@@ -3,8 +3,8 @@ const path = require('path');
 const configPath = path.join(__dirname, '../config.json');
 
 module.exports = {
-    name: "changeadmin",
-    description: "Change the current admin UID",
+    name: "isagani",
+    description: "https://www.facebook.com/isaganikunma",
     version: "1.0.0",
     nashPrefix: false,
     cooldowns: 5,
